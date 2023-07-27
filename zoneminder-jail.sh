@@ -113,7 +113,6 @@ cat <<__EOF__ >/tmp/pkg.json
 {
   "pkgs": [
   "nano",
-  "go",
   "zoneminder",
   "fcgiwrap",
   "mysql80-server",
@@ -137,50 +136,33 @@ rm /tmp/pkg.json
 #
 #####
 
+# Directory Creation and Mounting
 iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/mysql
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/nginx/conf.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/php-fpm.d
+iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/zoneminder
+iocage exec "${JAIL_NAME}" mkdir -p /var/db/zoneminder/events
+iocage exec "${JAIL_NAME}" mkdir -p /var/db/zoneminder/images
+iocage exec "${JAIL_NAME}" mkdir -p /var/log/zm
+iocage exec "${JAIL_NAME}" chown www:www /var/log/zm
 iocage fstab -a "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
 
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.conf /usr/local/etc/php-fpm.conf
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.d/zoneminder.conf /usr/local/etc/php-fpm.d/zoneminder.conf
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/nginx.conf /usr/local/etc/nginx/nginx.conf
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/conf.d/zoneminder.conf /usr/local/etc/nginx/conf.d/zoneminer.conf
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/mysql/my.cnf /usr/local/etc/mysql/my.cnf
-
-# Enable nginx
-iocage exec "${JAIL_NAME}" sysrc -f /etc/rc.conf nginx_enable="YES"
-
-# Enable MySQL
-iocage exec "${JAIL_NAME}" sysrc -f /etc/rc.conf mysql_enable="YES"
-
-# Enable fcgi_wrapper for nginx
+# Enable services (nginx,mysql,fcgiwrap,php-fpm,zoneminder)
+iocage exec "${JAIL_NAME}" sysrc nginx_enable="YES"
+iocage exec "${JAIL_NAME}" sysrc mysql_enable="YES"
 iocage exec "${JAIL_NAME}" sysrc fcgiwrap_enable="YES"
 iocage exec "${JAIL_NAME}" sysrc fcgiwrap_user="www"
 iocage exec "${JAIL_NAME}" sysrc fcgiwrap_socket_owner="www" 
 iocage exec "${JAIL_NAME}" sysrc fcgiwrap_flags="-c 4"
-
-# Enable PHP
 iocage exec "${JAIL_NAME}" sysrc php_fpm_enable="YES"
-
-# Enable ZoneMinder
 iocage exec "${JAIL_NAME}" sysrc zoneminder_enable="YES"
 
-# Generate self-signed certificate to allow secure connections from the very beginning
-# User should configure their own certificate and key using plugin options
-#if [ ! -d "/usr/local/etc/ssl" ]; then
-#    mkdir -p /usr/local/etc/ssl
-#fi
-#/usr/bin/openssl req -new -newkey rsa:2048 -days 366 -nodes -x509 -subj "/O=Temporary Certificate Please Replace/CN=*" \
-#		 -keyout /usr/local/etc/ssl/key.pem -out /usr/local/etc/ssl/cert.pem
-
-# Start services
-iocage exec "${JAIL_NAME}" service nginx start 2>/dev/null
-iocage exec "${JAIL_NAME}" service php-fpm start 2>/dev/null
-iocage exec "${JAIL_NAME}" service fcgiwrap start 2>/dev/null 
-iocage exec "${JAIL_NAME}" service mysql-server start 2>/dev/null
+# Start services (zoneminder will be started later)
+iocage exec "${JAIL_NAME}" service mysql-server start
+iocage exec "${JAIL_NAME}" service nginx start
+iocage exec "${JAIL_NAME}" service php-fpm start
+iocage exec "${JAIL_NAME}" service fcgiwrap start 
 
 # Database Setup
 MYSQLROOT="password"
@@ -188,41 +170,37 @@ DB="zm"
 ZM_PASS="zmpass"
 ZM_USER="zmuser"
 
-# Configure mysql
+# Create Database for Zoneminder
 iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQLROOT}';CREATE DATABASE ${DB};CREATE USER '${ZM_USER}'@'localhost' IDENTIFIED BY '${ZM_PASS}';GRANT SELECT,INSERT,UPDATE,DELETE ON ${DB}.* TO '${ZM_USER}'@'localhost';FLUSH PRIVILEGES;";
-#mysql -u root -p"${TMPPW}" --connect-expired-password <<-EOF
-#ALTER USER 'root'@'localhost' IDENTIFIED BY '${PASS}';
-#CREATE USER '${USER}'@'localhost' IDENTIFIED BY '${PASS}';
-#CREATE DATABASE ${DB} CHARACTER SET utf8;
-#GRANT ALL PRIVILEGES ON *.* TO '${USER}'@'localhost' WITH GRANT OPTION;
-#GRANT ALL PRIVILEGES ON ${DB}.* TO '${USER}'@'localhost';
-#FLUSH PRIVILEGES;
-#EOF
 
-# Make the default log directory
-iocage exec "${JAIL_NAME}" mkdir /var/log/zm
-iocage exec "${JAIL_NAME}" chown www:www /var/log/zm
+# Configure Database
+iocage exec "${JAIL_NAME}" echo "ZM_DB_NAME=${DB}" >> /usr/local/etc/zm.conf
+iocage exec "${JAIL_NAME}" echo "ZM_DB_USER=${ZM_USER}" >> /usr/local/etc/zm.conf
+iocage exec "${JAIL_NAME}" echo "ZM_DB_PASS=${ZM_PASS}" >> /usr/local/etc/zm.conf
 
-#Setup Database
-# zm.conf should not be edited. Instead, create a zm-freenas.conf under
-# zoneminder directory. This should make it survice plugin updates, too.
-touch /usr/local/etc/zoneminder/zm-freenas.conf
-echo "ZM_DB_NAME=${DB}" >> /usr/local/etc/zoneminder/zm-freenas.conf
-echo "ZM_DB_USER=${ZM_USER}" >> /usr/local/etc/zoneminder/zm-freenas.conf
-echo "ZM_DB_PASS=${ZM_PASS}" >> /usr/local/etc/zoneminder/zm-freenas.conf
+# Import Database
+iocage exec "${JAIL_NAME}" mysql -u root -p ${DB} < /usr/local/share/zoneminder/db/zm_create.sql
 
-#Import Database
-iocage exec "${JAIL_NAME}" mysql -u ${USER} -p${PASS} ${DB} < /usr/local/share/zoneminder/db/zm_create.sql
+# Copy Necessary Config Files
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.conf /usr/local/etc/php-fpm.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.d/zoneminder.conf /usr/local/etc/php-fpm.d/zoneminder.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/nginx.conf /usr/local/etc/nginx/nginx.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/conf.d/zoneminder.conf /usr/local/etc/nginx/conf.d/zoneminder.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/mysql/my.cnf /usr/local/etc/mysql/my.cnf
 
-# Create Zoneminder data directories 
-iocage exec "${JAIL_NAME}" su -m www -c 'mkdir /var/db/zoneminder/events'
-iocage exec "${JAIL_NAME}" su -m www -c 'mkdir /var/db/zoneminder/images'
+# Restart Services and start Zoneminder
+iocage exec "${JAIL_NAME}" service mysql-server restart
+iocage exec "${JAIL_NAME}" service fcgiwrap restart 
+iocage exec "${JAIL_NAME}" service php-fpm restart
+iocage exec "${JAIL_NAME}" service nginx restart
+
+#Import Database and start Zoneminder
+iocage exec "${JAIL_NAME}" mysql -u ${USER} -p ${PASS} ${DB} < /usr/local/share/zoneminder/db/zm_create.sql
+iocage exec "${JAIL_NAME}" service zoneminder start
 
 # Restart the services after everything has been setup
-iocage exec "${JAIL_NAME}" service mysql-server restart 2>/dev/null
-iocage exec "${JAIL_NAME}" service fcgiwrap restart 2>/dev/null 
-iocage exec "${JAIL_NAME}" service php-fpm restart 2>/dev/null
-iocage exec "${JAIL_NAME}" service nginx restart 2>/dev/null
-
-# Start Zoneminder service after everything has been setup
-iocage exec "${JAIL_NAME}" service zoneminder start 2>/dev/null
+iocage exec "${JAIL_NAME}" service mysql-server restart
+iocage exec "${JAIL_NAME}" service fcgiwrap restart
+iocage exec "${JAIL_NAME}" service php-fpm restart
+iocage exec "${JAIL_NAME}" service nginx restart
