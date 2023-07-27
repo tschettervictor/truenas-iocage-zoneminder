@@ -131,6 +131,25 @@ then
 fi
 rm /tmp/pkg.json
 
+#####
+#
+# Directory Creation and Mounting
+#
+#####
+
+iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
+iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/mysql
+iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/nginx/conf.d
+iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/php-fpm.d
+iocage fstab -a "${JAIL_NAME}" "${INCLUDES_PATH}" /mnt/includes nullfs rw 0 0
+
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.conf /usr/local/etc/php-fpm.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.d/zoneminder.conf /usr/local/etc/php-fpm.d/zoneminder.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/nginx.conf /usr/local/etc/nginx/nginx.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/conf.d/zoneminder.conf /usr/local/etc/nginx/conf.d/zoneminer.conf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/mysql/my.cnf /usr/local/etc/mysql/my.cnf
+
 # Enable nginx
 iocage exec "${JAIL_NAME}" sysrc -f /etc/rc.conf nginx_enable="YES"
 
