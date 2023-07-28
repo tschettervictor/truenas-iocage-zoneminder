@@ -172,14 +172,15 @@ ZM_USER="zmuser"
 
 # Create Database for Zoneminder
 iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQLROOT}';CREATE DATABASE ${DB};CREATE USER '${ZM_USER}'@'localhost' IDENTIFIED BY '${ZM_PASS}';GRANT SELECT,INSERT,UPDATE,DELETE ON ${DB}.* TO '${ZM_USER}'@'localhost';FLUSH PRIVILEGES;";
+iocage exec "${JAIL_NAME}" service mysql-server restart
+
+# Import Database
+iocage exec "${JAIL_NAME}" “mysql -u root -p ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
 
 # Configure Database
 iocage exec "${JAIL_NAME}" echo "ZM_DB_NAME=${DB}" >> /usr/local/etc/zm.conf
 iocage exec "${JAIL_NAME}" echo "ZM_DB_USER=${ZM_USER}" >> /usr/local/etc/zm.conf
 iocage exec "${JAIL_NAME}" echo "ZM_DB_PASS=${ZM_PASS}" >> /usr/local/etc/zm.conf
-
-# Import Database
-iocage exec "${JAIL_NAME}" “mysql -u root -p ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
 
 # Copy Necessary Config Files
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
@@ -195,12 +196,5 @@ iocage exec "${JAIL_NAME}" service fcgiwrap restart
 iocage exec "${JAIL_NAME}" service php-fpm restart
 iocage exec "${JAIL_NAME}" service nginx restart
 
-#Import Database and start Zoneminder
-iocage exec "${JAIL_NAME}" mysql -u ${USER} -p ${PASS} ${DB} < /usr/local/share/zoneminder/db/zm_create.sql
+# Start Zoneminder
 iocage exec "${JAIL_NAME}" service zoneminder start
-
-# Restart the services after everything has been setup
-iocage exec "${JAIL_NAME}" service mysql-server restart
-iocage exec "${JAIL_NAME}" service fcgiwrap restart
-iocage exec "${JAIL_NAME}" service php-fpm restart
-iocage exec "${JAIL_NAME}" service nginx restart
