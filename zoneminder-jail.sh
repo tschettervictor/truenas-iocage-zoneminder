@@ -175,7 +175,7 @@ iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENT
 iocage exec "${JAIL_NAME}" service mysql-server restart
 
 # Import Database
-iocage exec "${JAIL_NAME}" “mysql -u root -p ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
+iocage exec "${JAIL_NAME}" “mysql -u root -p${MYSQLROOT} ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
 
 # Configure Database
 iocage exec "${JAIL_NAME}" echo "ZM_DB_NAME=${DB}" >> /usr/local/etc/zm.conf
