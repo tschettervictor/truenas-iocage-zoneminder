@@ -179,7 +179,7 @@ iocage exec "${JAIL_NAME}" echo "ZM_DB_USER=${ZM_USER}" >> /usr/local/etc/zm.con
 iocage exec "${JAIL_NAME}" echo "ZM_DB_PASS=${ZM_PASS}" >> /usr/local/etc/zm.conf
 
 # Import Database
-iocage exec "${JAIL_NAME}" mysql -u root -p ${DB} < /usr/local/share/zoneminder/db/zm_create.sql
+iocage exec "${JAIL_NAME}" “mysql -u root -p ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
 
 # Copy Necessary Config Files
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
