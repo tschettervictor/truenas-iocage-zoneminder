@@ -172,10 +172,9 @@ ZM_USER="zmuser"
 
 # Create Database for Zoneminder
 iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQLROOT}';CREATE DATABASE ${DB};CREATE USER '${ZM_USER}'@'localhost' IDENTIFIED BY '${ZM_PASS}';GRANT SELECT,INSERT,UPDATE,DELETE ON ${DB}.* TO '${ZM_USER}'@'localhost';FLUSH PRIVILEGES;";
-#iocage exec "${JAIL_NAME}" service mysql-server restart
 
 # Import Database
-iocage exec "${JAIL_NAME}" “mysql -u root -p${MYSQLROOT} ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
+iocage exec "${JAIL_NAME}" "mysql -u root --password='${MYSQLROOT}' '${DB}' < /usr/local/share/zoneminder/db/zm_create.sql"
 
 # Configure Database
 iocage exec "${JAIL_NAME}" echo "ZM_DB_NAME=${DB}" >> /usr/local/etc/zm.conf
@@ -188,7 +187,7 @@ iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.conf /usr/local/etc/php-f
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php-fpm.d/zoneminder.conf /usr/local/etc/php-fpm.d/zoneminder.conf
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/nginx.conf /usr/local/etc/nginx/nginx.conf
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/nginx/conf.d/zoneminder.conf /usr/local/etc/nginx/conf.d/zoneminder.conf
-iocage exec "${JAIL_NAME}" cp -f /mnt/includes/mysql/my.cnf /usr/local/etc/mysql/my.cnf
+iocage exec "${JAIL_NAME}" cp -f /mnt/includes/mysql/my.cnf /usr/local/etc/mysql/conf.d/zoneminder.cnf
 
 # Restart Services and start Zoneminder
 iocage exec "${JAIL_NAME}" service mysql-server restart
