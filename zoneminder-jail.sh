@@ -172,7 +172,7 @@ ZM_USER="zmuser"
 
 # Create Database for Zoneminder
 iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQLROOT}';CREATE DATABASE ${DB};CREATE USER '${ZM_USER}'@'localhost' IDENTIFIED BY '${ZM_PASS}';GRANT SELECT,INSERT,UPDATE,DELETE ON ${DB}.* TO '${ZM_USER}'@'localhost';FLUSH PRIVILEGES;";
-iocage exec "${JAIL_NAME}" service mysql-server restart
+#iocage exec "${JAIL_NAME}" service mysql-server restart
 
 # Import Database
 iocage exec "${JAIL_NAME}" “mysql -u root -p${MYSQLROOT} ${DB} < /usr/local/share/zoneminder/db/zm_create.sql”
