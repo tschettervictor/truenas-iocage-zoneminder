@@ -20,11 +20,7 @@ JAIL_INTERFACES=""
 DEFAULT_GW_IP=""
 INTERFACE="vnet0"
 VNET="on"
-#POOL_PATH=""
 JAIL_NAME="zoneminder"
-HOST_NAME=""
-#DB_PATH=""
-#CONFIG_PATH=""
 CONFIG_NAME="zoneminder-config"
 
 DATABASE="MySQL"
@@ -52,7 +48,7 @@ RELEASE=$(freebsd-version | cut -d - -f -1)"-RELEASE"
 #
 #####
 
-# Check that necessary variables were set by vaultwarden-config
+# Check that necessary variables were set by zoneminder-config
 if [ -z "${JAIL_IP}" ]; then
   echo 'Configuration error: JAIL_IP must be set'
   exit 1
@@ -65,35 +61,6 @@ if [ -z "${DEFAULT_GW_IP}" ]; then
   echo 'Configuration error: DEFAULT_GW_IP must be set'
   exit 1
 fi
-#if [ -z "${POOL_PATH}" ]; then
-#  echo 'Configuration error: POOL_PATH must be set'
-#  exit 1
-#fi
-#if [ -z "${HOST_NAME}" ]; then
-#  echo 'Configuration error: HOST_NAME must be set'
-#  exit 1
-#fi
-
-# If DB_PATH and CONFIG_PATH weren't set, set them
-#if [ -z "${DB_PATH}" ]; then
-#  DB_PATH="${POOL_PATH}"/zoneminder/db
-#fi
-#if [ -z "${CONFIG_PATH}" ]; then
-#  CONFIG_PATH="${POOL_PATH}"/zoneminder/config
-#fi
-
-#if [ "${DB_PATH}" = "${CONFIG_PATH}" ]
-#then
-#  echo "DB_PATH and CONFIG_PATH must be different."
-#  exit 1
-#fi
-
-# Sanity check DB_PATH and CONFIG_PATH must be different from POOL_PATH
-#if [ "${DB_PATH}" = "${POOL_PATH}" ] || [ "${CONFIG_PATH}" = "${POOL_PATH}" ] 
-#then
-#  echo "DB_PATH and CONFIG_PATH must be different from POOL_PATH!"
-#  exit 1
-#fi
 
 # Extract IP and netmask, sanity check netmask
 IP=$(echo ${JAIL_IP} | cut -f1 -d/)
@@ -201,7 +168,7 @@ echo "${DATABASE} root user is root and password is ${MYSQLROOT}" > /root/${JAIL
 echo "Zoneminder database user is ${ZM_USER} and password is ${ZM_PASS}" >> /root/${JAIL_NAME}_db_password.txt
 
 echo "Installation complete."
-echo "Using your web browser, go to http://${JAIL_IP}/zm to access zoneminder."
+echo "Using your web browser, go to http://${IP}/zm to access zoneminder."
 
 echo "MySQL Username: root"
 echo "MySQL Password: ${MYSQLROOT}"
