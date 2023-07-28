@@ -176,9 +176,9 @@ iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENT
 iocage exec "${JAIL_NAME}" "mysql -u root --password='${MYSQLROOT}' '${DB}' < /usr/local/share/zoneminder/db/zm_create.sql"
 
 # Configure Database Info
-iocage exec "${JAIL_NAME}" 'echo "ZM_DB_NAME=${DB}" > /usr/local/etc/zoneminder/zm-truenas.conf'
-iocage exec "${JAIL_NAME}" 'echo "ZM_DB_USER=${ZM_USER}" >> /usr/local/etc/zoneminder/zm-truenas.conf'
-iocage exec "${JAIL_NAME}" 'echo "ZM_DB_PASS=${ZM_PASS}" >> /usr/local/etc/zoneminder/zm-truenas.conf'
+iocage exec "${JAIL_NAME}" 'echo "ZM_DB_NAME='${DB}'" > /usr/local/etc/zoneminder/zm-truenas.conf'
+iocage exec "${JAIL_NAME}" 'echo "ZM_DB_USER='${ZM_USER}'" >> /usr/local/etc/zoneminder/zm-truenas.conf'
+iocage exec "${JAIL_NAME}" 'echo "ZM_DB_PASS='${ZM_PASS}'" >> /usr/local/etc/zoneminder/zm-truenas.conf'
 
 # Copy Necessary Config Files
 iocage exec "${JAIL_NAME}" cp -f /mnt/includes/php.ini /usr/local/etc/php.ini
