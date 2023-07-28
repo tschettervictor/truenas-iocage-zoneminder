@@ -138,7 +138,8 @@ rm /tmp/pkg.json
 
 # Directory Creation and Mounting
 iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
-iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/mysql
+#iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/mysql
+iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/mysql/conf.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/nginx/conf.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/php-fpm.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/zoneminder
