@@ -29,5 +29,5 @@ Once you've downloaded the script and prepared the configuration file, run this 
 
 ### Notes
 - Reinstalls is not supported at this time. If you are going to rebuild your jail, make sure to save any needed data.
-- This script installs zoneminder to run on port 80. If you need HTTPS, you will be on your own, as I do not use nginx.
+- This script will install a self-signed cert for use with https.
 - Database passwords are stored in you TrueNAS root directory.
