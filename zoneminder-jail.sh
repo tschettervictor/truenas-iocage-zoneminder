@@ -88,7 +88,6 @@ cat <<__EOF__ >/tmp/pkg.json
   "zoneminder",
   "fcgiwrap",
   "mysql80-server",
-  "mysql-connector-java",
   "nginx"
   ]
 }
