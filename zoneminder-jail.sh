@@ -113,6 +113,7 @@ iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/mysql/conf.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/nginx/conf.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/php-fpm.d
 iocage exec "${JAIL_NAME}" mkdir -p /usr/local/etc/zoneminder
+iocage exec “${JAIL_NAME}” mkdir -p /usr/local/etc/ssl
 iocage exec "${JAIL_NAME}" mkdir -p /var/db/zoneminder/events
 iocage exec "${JAIL_NAME}" mkdir -p /var/db/zoneminder/images
 iocage exec "${JAIL_NAME}" mkdir -p /var/log/zm
@@ -128,6 +129,9 @@ iocage exec "${JAIL_NAME}" sysrc fcgiwrap_socket_owner="www"
 iocage exec "${JAIL_NAME}" sysrc fcgiwrap_flags="-c 4"
 iocage exec "${JAIL_NAME}" sysrc php_fpm_enable="YES"
 iocage exec "${JAIL_NAME}" sysrc zoneminder_enable="YES"
+
+# Generat SSL Certificate for Nginx
+iocage exec ”${JAIL_NAME}” ’openssl req -new -newkey rsa:2048 -days 366 -nodes -x509 -subj "/O=Temporary Certificate Please Replace/CN=*" -keyout /usr/local/etc/ssl/key.pem -out /usr/local/etc/ssl/cert.pem’
 
 # Start services (zoneminder will be started later)
 iocage exec "${JAIL_NAME}" service mysql-server start
