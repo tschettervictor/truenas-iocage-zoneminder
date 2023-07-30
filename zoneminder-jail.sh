@@ -88,6 +88,7 @@ cat <<__EOF__ >/tmp/pkg.json
   "zoneminder",
   "fcgiwrap",
   "mysql80-server",
+  "openssl",
   "nginx"
   ]
 }
@@ -131,7 +132,7 @@ iocage exec "${JAIL_NAME}" sysrc php_fpm_enable="YES"
 iocage exec "${JAIL_NAME}" sysrc zoneminder_enable="YES"
 
 # Generat SSL Certificate for Nginx
-iocage exec "${JAIL_NAME}" ’openssl req -new -newkey rsa:2048 -days 366 -nodes -x509 -subj "/O=Temporary Certificate Please Replace/CN=*" -keyout /usr/local/etc/ssl/key.pem -out /usr/local/etc/ssl/cert.pem’
+iocage exec "${JAIL_NAME}" 'openssl req -new -newkey rsa:2048 -days 366 -nodes -x509 -subj "/O=ZoneMinder Home/CN=*" -keyout /usr/local/etc/ssl/key.pem -out /usr/local/etc/ssl/cert.pem'
 
 # Start services (zoneminder will be started later)
 iocage exec "${JAIL_NAME}" service mysql-server start
