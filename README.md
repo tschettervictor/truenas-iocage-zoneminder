@@ -1,5 +1,5 @@
 # truenas-iocage-zoneminder
-Script to create an iocage jail on TrueNAS for the latest zoneminder pkg release. This script used essentially all the components from the original TrueNAS CORE plugin repo, including nginx as the webserver. It will create the database and generate a strong root password and user password for the database system. 
+Script to create an iocage jail on TrueNAS for the latest zoneminder pkg release. This script uses essentially all the components from the original TrueNAS CORE plugin repo, including nginx as the webserver. It will create the database and generate a strong root password and user password for the database system. 
 
 ## Status
 This script will work with TrueNAS CORE 13.0.  Due to the EOL status of FreeBSD 12.0, it is unlikely to work reliably with earlier releases of FreeNAS.
@@ -7,7 +7,7 @@ This script will work with TrueNAS CORE 13.0.  Due to the EOL status of FreeBSD 
 ## Usage
 
 ### Prerequisites
-The only prerequisites at this time are to have you `zoneminder-config` file set up. This script does not store any data outside the jail at this time.
+This script does not store any data outside the jail at this time, so there are no prerequisites.
 
 ### Installation
 Download the repository to a convenient directory on your TrueNAS system by changing to that directory and running `git clone https://github.com/tschettervictor/truenas-iocage-zoneminder`.  Then change into the new `truenas-iocage-zoneminder` directory and create a file called `zoneminder-config` with your favorite text editor.  In its minimal form, it would look like this:
