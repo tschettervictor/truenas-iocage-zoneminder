@@ -172,7 +172,7 @@ echo "${DATABASE} root user is root and password is ${MYSQLROOT}" > /root/${JAIL
 echo "Zoneminder database user is ${ZM_USER} and password is ${ZM_PASS}" >> /root/${JAIL_NAME}_db_password.txt
 
 echo "Installation complete."
-echo "Using your web browser, go to http://${IP}/zm to access zoneminder."
+echo "Using your web browser, go to https://${IP}/zm to access zoneminder."
 
 echo "MySQL Username: root"
 echo "MySQL Password: ${MYSQLROOT}"
