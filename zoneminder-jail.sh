@@ -10,11 +10,11 @@ fi
 
 #####
 #
-# General configuration
+# General Configuration
 #
 #####
 
-# Initialize defaults
+# Script Default Variables
 JAIL_IP=""
 JAIL_INTERFACES=""
 DEFAULT_GW_IP=""
@@ -22,7 +22,7 @@ INTERFACE="vnet0"
 VNET="on"
 JAIL_NAME="zoneminder"
 CONFIG_NAME="zoneminder-config"
-
+# Database Variables
 DATABASE="MySQL"
 MYSQLROOT=$(openssl rand -base64 15)
 DB="zm"
@@ -44,7 +44,7 @@ RELEASE=$(freebsd-version | cut -d - -f -1)"-RELEASE"
 
 #####
 #
-# Input/Config Sanity checks
+# Input/Config Sanity Checks
 #
 #####
 
@@ -84,7 +84,6 @@ fi
 cat <<__EOF__ >/tmp/pkg.json
 {
   "pkgs": [
-  "nano",
   "zoneminder",
   "fcgiwrap",
   "mysql80-server",
@@ -101,12 +100,6 @@ then
 	exit 1
 fi
 rm /tmp/pkg.json
-
-#####
-#
-# Directory Creation and Mounting
-#
-#####
 
 # Directory Creation and Mounting
 iocage exec "${JAIL_NAME}" mkdir -p /mnt/includes
@@ -143,7 +136,7 @@ iocage exec "${JAIL_NAME}" service fcgiwrap start
 # Create Database for Zoneminder
 iocage exec "${JAIL_NAME}" mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQLROOT}';CREATE DATABASE ${DB};CREATE USER '${ZM_USER}'@'localhost' IDENTIFIED BY '${ZM_PASS}';GRANT SELECT,INSERT,UPDATE,DELETE ON ${DB}.* TO '${ZM_USER}'@'localhost';FLUSH PRIVILEGES;";
 
-# Import Database
+# Import Zoneminder Database to MySQL
 iocage exec "${JAIL_NAME}" "mysql -u root --password='${MYSQLROOT}' '${DB}' < /usr/local/share/zoneminder/db/zm_create.sql"
 
 # Configure Database Info
@@ -164,17 +157,18 @@ iocage exec "${JAIL_NAME}" service mysql-server restart
 iocage exec "${JAIL_NAME}" service fcgiwrap restart 
 iocage exec "${JAIL_NAME}" service php-fpm restart
 iocage exec "${JAIL_NAME}" service nginx restart
-
-# Start Zoneminder
 iocage exec "${JAIL_NAME}" service zoneminder start
 
+echo "Database Information"
+echo "---------------"
 echo "${DATABASE} root user is root and password is ${MYSQLROOT}" > /root/${JAIL_NAME}_db_password.txt
 echo "Zoneminder database user is ${ZM_USER} and password is ${ZM_PASS}" >> /root/${JAIL_NAME}_db_password.txt
-
+echo "---------------"
 echo "Installation complete."
 echo "Using your web browser, go to https://${IP}/zm to access zoneminder."
-
+echo "---------------"
 echo "MySQL Username: root"
 echo "MySQL Password: ${MYSQLROOT}"
 echo "Zoneminder DB User: ${ZM_USER}"
 echo "Zoneminder DB Password: ${ZM_PASS}"
+echo "All passwords are saved in /root/${JAIL_NAME}_db_password.txt"
