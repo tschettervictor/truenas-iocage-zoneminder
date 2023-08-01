@@ -28,6 +28,6 @@ These two option are self explanatory, but you can configure a few others as wel
 Once you've downloaded the script and prepared the configuration file, run this script (`script zoneminder.log ./zoneminder-jail.sh`).  The script will run for several minutes.  When it finishes, your jail will be created, zoneminder will be installed and configured, and you'll be shown the randomly-generated passwords for the database.
 
 ### Notes
-- Reinstalls is not supported at this time. If you are going to rebuild your jail, make sure to save any needed data.
+- Reinstall is not supported at this time. If you are going to rebuild your jail, make sure to save any needed data.
 - This script will install a self-signed cert for use with https.
-- Database passwords are stored in you TrueNAS root directory.
+- Database passwords are stored in your TrueNAS root directory.
